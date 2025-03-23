@@ -6,14 +6,13 @@
 /*   By: mgavorni <mgavorni@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/20 15:52:08 by mgavorni          #+#    #+#             */
-/*   Updated: 2025/03/23 00:49:53 by mgavorni         ###   ########.fr       */
+/*   Updated: 2025/03/23 02:24:56 by mgavorni         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/minishell.h"
 
-
-sig_data_t		g_glob_sig = {0};
+t_sig_data		g_glob_sig = {0};
 
 void	sig_handler(int sig)
 {
@@ -23,12 +22,11 @@ void	sig_handler(int sig)
 	while (g_glob_sig.sig)
 	{
 		write(STDOUT_FILENO, "\n", 1);
-		rl_replace_line("", 0);
 		rl_on_new_line();
+		rl_replace_line("", 0);
 		rl_redisplay();
 		g_glob_sig.sig = 0;
 	}
-	printf("Signal recognized\n");
 }
 
 pid_t	child_ret(siginfo_t *info, int *status)
@@ -65,7 +63,7 @@ void	sig_alt_handler(int sig, siginfo_t *info, void *context)
 	}
 }
 
-int	register_sig(const sig_action_t *config)
+int	register_sig(const t_sig_action *config)
 {
 	struct sigaction	sa;
 
@@ -75,7 +73,7 @@ int	register_sig(const sig_action_t *config)
 	if (config->sig_flag & SA_SIGINFO)
 		sa.sa_sigaction = config->sig_alt_handler;
 	else
-		sa.sa_sigaction = config->sig_handler;
+		sa.sa_handler = config->sig_handler;
 	if (sigaction(config->signum, &sa, NULL) == -1)
 	{
 		if (config->descript)

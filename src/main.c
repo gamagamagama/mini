@@ -6,7 +6,7 @@
 /*   By: mgavorni <mgavorni@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 20:44:35 by vnicoles          #+#    #+#             */
-/*   Updated: 2025/03/23 00:50:56 by mgavorni         ###   ########.fr       */
+/*   Updated: 2025/03/23 01:56:10 by mgavorni         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,14 @@ int	main(int argc, char **argv, char **envp) {
 	arena = arena_init(1024 * 1024);
 	//env_list = create_env_list();
 	env = init_env(arena, envp);
+	setup_sig_handler(SIG_REAL);
 	while (1) {
 		input = readline("minishell> ");
 		if (!input)
+		{
+			setup_sig_handler(SIG_VIRTUAL_CTRL_D);
 			continue;
+		}
 		if (strcmp(input, "exit") == 0) {
             free(input);
 			break;

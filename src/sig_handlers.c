@@ -6,60 +6,60 @@
 /*   By: mgavorni <mgavorni@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/22 21:09:45 by mgavorni          #+#    #+#             */
-/*   Updated: 2025/03/23 00:47:22 by mgavorni         ###   ########.fr       */
+/*   Updated: 2025/03/23 01:53:26 by mgavorni         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/minishell.h"
 
-sig_action_t	m_sigint_handler(sigset_t sig_mask)
+t_sig_action	m_sigint_handler(sigset_t sig_mask)
 {
-	return ((sig_action_t){
+	return ((t_sig_action){
 		.descript = "Ctrl-C Handler",
 		.type = REAL_SIGNAL,
 		.sig_handler = sig_handler,
 		.sig_alt_handler = NULL,
 		.virtual = NULL,
 		.sig_mask = sig_mask,
-		.virtual_id = 0,
+		.id = SIG_REAL,
 		.sig_flag = SA_RESTART,
 		.signum = SIGINT});
 }
 
-sig_action_t	m_sigquit_handler(sigset_t sig_mask)
+t_sig_action	m_sigquit_handler(sigset_t sig_mask)
 {
-	return ((sig_action_t){
+	return ((t_sig_action){
 		.descript = "Ctrl-\\ Handler",
 		.type = REAL_SIGNAL,
-		.sig_handler = NULL,
-		.sig_alt_handler = SIG_IGN,
+		.sig_handler = SIG_IGN,
+		.sig_alt_handler = NULL,
 		.virtual = NULL,
 		.sig_mask = sig_mask,
-		.virtual_id = 0,
+		.id = SIG_REAL,
 		.sig_flag = 0,
 		.signum = SIGQUIT});
 }
 
-sig_action_t	m_sigchild_handler(sigset_t sig_mask)
+t_sig_action	m_sigchild_handler(sigset_t sig_mask)
 {
-	return ((sig_action_t){
+	return ((t_sig_action){
 		.descript = "Child exit Handler",
 		.type = REAL_SIGNAL,
 		.sig_handler = NULL,
 		.sig_alt_handler = sig_alt_handler,
 		.virtual = NULL,
 		.sig_mask = sig_mask,
-		.virtual_id = 0,
+		.id = SIG_REAL,
 		.sig_flag = SA_SIGINFO | SA_RESTART,
 		.signum = SIGCHLD});
 }
 
 
-void	setup_sig_handler(void)
+void	setup_sig_handler(int id)
 {
 	sigset_t		sig_mask;
 	size_t			i;
-	sig_action_t	signals[SIGNAL_COUNT];
+	t_sig_action	signals[SIGNAL_COUNT];
 
 	rl_catch_signals = 0;
 	sigemptyset(&sig_mask);
@@ -73,6 +73,11 @@ void	setup_sig_handler(void)
 		if (signals[i].type == REAL_SIGNAL && register_sig(&signals[i]) == -1)
 		{
 			printf("Registration of : %s FAILED\n", signals[i].descript);
+		}
+		else if (signals[i].type == FAKE_SIGNAL && signals[i].id == id)
+		{
+			signals[i].virtual();
+			break ;
 		}
 		i++;
 	}
